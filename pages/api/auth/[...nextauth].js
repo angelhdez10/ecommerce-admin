@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 //import FacebookProvider from "next-auth/providers/facebook";
 import GoogleProvider from "next-auth/providers/google";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
-import clientPromise from "../../../lib/mongodb.ts";
+import clientPromise from "@/lib/mongodb.ts";
 //import EmailProvider from "next-auth/providers/email";
 
 export default NextAuth({
