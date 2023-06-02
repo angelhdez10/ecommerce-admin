@@ -11,7 +11,7 @@ export default function Input({
     <div className="input-container">
       {!textArea ? (
         <input
-          onChange={onChange}
+          onChange={(ev) => onChange(ev)}
           name={name}
           value={value}
           type={type ? type : "text"}
@@ -20,7 +20,7 @@ export default function Input({
         />
       ) : (
         <textarea
-          onChange={onChange}
+          onChange={(ev) => onChange(ev)}
           name={name}
           value={value}
           type={type ? type : "text"}
