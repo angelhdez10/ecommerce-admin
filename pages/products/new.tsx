@@ -11,10 +11,10 @@ export default function NewProduct() {
     name: "",
     description: "",
     price: "",
+    images: [],
   });
 
   const router = useRouter();
-  console.log(product);
   const createProduct = async (ev, product) => {
     ev.preventDefault();
     const productCreated = await axios.post("/api/products", product);

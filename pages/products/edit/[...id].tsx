@@ -14,14 +14,11 @@ export default function EditPageProduct() {
     });
   }, [id]);
   const updateProduct = async (ev, product) => {
-    console.log(product, "here");
     ev.preventDefault();
     const updatedProduct = await axios.put("/api/products", product);
-    console.log(updatedProduct);
     if (updatedProduct.request.status === 200) {
       return router.push("/products");
     }
-    console.log(product);
   };
   return (
     <Layout>
