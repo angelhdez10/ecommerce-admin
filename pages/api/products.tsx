@@ -6,12 +6,13 @@ export default async function handle(req, res) {
   const { method } = req;
   await mongooseConnect();
   if (method === "POST") {
-    const { name, description, price } = req.body;
+    const { name, description, price, images } = req.body;
     try {
       const productDoc = await Product.create({
         name,
         description,
         price,
+        images,
       });
       res.json(productDoc).status(200);
     } catch (e) {
@@ -35,11 +36,11 @@ export default async function handle(req, res) {
     try {
       console.log(req, "put");
       const { _id: id } = req.body;
-      const { name, description, price } = req.body;
+      const { name, description, price, images } = req.body;
       if (id) {
         const product = await Product.updateOne(
           { _id: id },
-          { name, description, price }
+          { name, description, price, images }
         );
         res.json(product).status(200);
       }

@@ -14,6 +14,7 @@ export default function EditPageProduct() {
     });
   }, [id]);
   const updateProduct = async (ev, product) => {
+    console.log(product, "ProductForm");
     ev.preventDefault();
     const updatedProduct = await axios.put("/api/products", product);
     if (updatedProduct.request.status === 200) {
