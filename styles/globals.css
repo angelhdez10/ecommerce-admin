@@ -7,13 +7,17 @@ form {
 }
 
 input,
-textarea {
+textarea,
+select {
   @apply outline-none border-b-2 border-gray-300 px-1 w-4/6 bg-slate-200;
   @apply mb-4;
 }
 
 .input-container {
   position: relative;
+}
+select {
+  @apply m-0;
 }
 
 label {
@@ -34,6 +38,15 @@ input:not(:placeholder-shown) + label,
 textarea:focus + label,
 textarea:not(:placeholder-shown) + label {
   transform: translateY(-1.25em) scale(0.75);
+}
+
+td,
+th {
+  @apply border border-gray-400 px-2;
+}
+
+th {
+  @apply bg-blue-300;
 }
 
 h2 {

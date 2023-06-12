@@ -1,5 +1,5 @@
-import { CircleLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 
 export default function Spinner() {
-  return <CircleLoader color={"#212121"} speedMultiplier={2} />;
+  return <BeatLoader color={"#36d7b7"} speedMultiplier={2} />;
 }
