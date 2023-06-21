@@ -2,12 +2,14 @@ import { mongooseConnect } from "@/lib/mongoose";
 import { Category } from "@/models/Category";
 
 export default async function handle(req, res) {
+  await mongooseConnect();
   const { method } = req;
   if (method === "POST") {
-    const { name, parentCategory } = req.body;
+    const { name, parentCategory, properties } = req.body;
     const categoryDoc = await Category.create({
       name,
       parent: parentCategory || null,
+      properties,
     });
     res.status(200).json(categoryDoc);
   }
@@ -17,13 +19,14 @@ export default async function handle(req, res) {
     res.status(200).json(allCategories);
   }
   if (method === "PUT") {
-    const { _id, name, parentCategory } = req.body;
+    const { _id, name, parentCategory, properties } = req.body;
     console.log(_id);
     const categoryDoc = await Category.updateOne(
       { _id },
       {
         name,
         parent: parentCategory || null,
+        properties,
       }
     );
     res.status(200).json(categoryDoc);

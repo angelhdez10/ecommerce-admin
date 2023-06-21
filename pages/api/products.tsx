@@ -6,17 +6,18 @@ export default async function handle(req, res) {
   const { method } = req;
   await mongooseConnect();
   if (method === "POST") {
-    const { name, description, price, images } = req.body;
+    const { name, description, price, images, category } = req.body;
     try {
       const productDoc = await Product.create({
         name,
         description,
         price,
         images,
+        category,
       });
-      res.json(productDoc).status(200);
+      res.status(200).json(productDoc);
     } catch (e) {
-      res.json({ error: "Error" })?.status(500);
+      res?.status(500).json({ error: "Error" });
     }
   } else if (method === "GET") {
     try {
@@ -24,29 +25,29 @@ export default async function handle(req, res) {
       console.log(id);
       if (id) {
         const product = await Product.findOne({ _id: id });
-        res.json(product).status(200);
+        res.status(200).json(product);
       }
       const allProducts = await Product.find();
       console.log("products");
-      res.json(allProducts).status(200);
+      res.status(200).json(allProducts);
     } catch (e) {
-      res.json(e)?.status(500);
+      res?.status(500).json(e);
     }
   } else if (method === "PUT") {
     try {
       console.log(req, "put");
       const { _id: id } = req.body;
-      const { name, description, price, images } = req.body;
+      const { name, description, price, images, category } = req.body;
       if (id) {
         const product = await Product.updateOne(
           { _id: id },
-          { name, description, price, images }
+          { name, description, price, images, category }
         );
-        res.json(product).status(200);
+        return res.status(200).json(product);
       }
-      res.json({}).status(403);
+      res.status(403).json({});
     } catch (e) {
-      res.json({}).status(500);
+      res.status(500).json({});
     }
   } else if (method === "DELETE") {
     try {
@@ -56,11 +57,11 @@ export default async function handle(req, res) {
       console.log(req);
       if (id) {
         await Product.deleteOne({ _id: id });
-        res.status(200);
+        return res.status(200);
       }
-      res.json({}).status(403);
+      res.status(403).json({});
     } catch (e) {
-      res.json({}).status(500);
+      res.status(500).json({});
     }
   }
 }

@@ -12,6 +12,7 @@ export default function NewProduct() {
     description: "",
     price: "",
     images: [],
+    categories: "",
   });
 
   const router = useRouter();

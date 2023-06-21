@@ -12,6 +12,7 @@ export default function Categories() {
   const [category, setCategory] = useState({
     name: "",
     parentCategory: "",
+    properties: [],
   });
   const [isUploading, setIsUploading] = useState({
     general: false,
@@ -46,18 +47,27 @@ export default function Categories() {
       item: true,
     });
     e.preventDefault();
+    const propertiesWithArrayValues = category?.properties?.map((p) => ({
+      ...p,
+      values: p.values.split(","),
+    }));
     if (editedCategory) {
       await axios.put("/api/categories", {
         _id: editedCategory?._id,
         ...category,
+        properties: propertiesWithArrayValues,
       });
       setEditedCategory(null);
     } else {
-      await axios.post("/api/categories", category);
+      await axios.post("/api/categories", {
+        ...category,
+        properties: propertiesWithArrayValues,
+      });
     }
     setCategory({
       name: "",
       parentCategory: "",
+      properties: [],
     });
     const newCategories = await axios.get("/api/categories");
     setCategories(newCategories.data);
@@ -71,6 +81,11 @@ export default function Categories() {
     setCategory({
       name: category?.name,
       parentCategory: category?.parent?._id,
+      properties:
+        category?.properties?.map((p) => ({
+          ...p,
+          values: p.values.toString(),
+        })) || [],
     });
   };
   const deleteCategory = async (id) => {
@@ -97,7 +112,40 @@ export default function Categories() {
         });
     }
   };
-  console.log(categories, isUploading, category, editedCategory);
+  const addProperty = () => {
+    setCategory({
+      ...category,
+      ["properties"]: [...category?.properties, { name: "", values: "" }],
+    });
+  };
+  const handlePropertyChange = (property, index, ev) => {
+    category.properties[index] = {
+      ...property,
+      [ev.target.name]: ev.target.value,
+    };
+    setCategory({
+      ...category,
+      ["properties"]: [...category.properties],
+    });
+  };
+  const deleteProperty = (index) => {
+    const newProperties = category.properties.filter(
+      (e, indexP) => indexP !== index
+    );
+    setCategory({
+      ...category,
+      ["properties"]: [...newProperties],
+    });
+  };
+  const cancelEdit = () => {
+    setEditedCategory(null);
+    setCategory({
+      name: "",
+      parentCategory: "",
+      properties: [],
+    });
+  };
+  console.log(editedCategory);
   return (
     <Layout>
       <h3 className="mb-2">Categories</h3>
@@ -108,7 +156,7 @@ export default function Categories() {
         {editedCategory && (
           <label className="relative block">Edit Category</label>
         )}
-        <div className="flex gap-1">
+        <div className="flex gap-1 mb-2">
           <input
             name="name"
             value={category.name}
@@ -128,28 +176,96 @@ export default function Categories() {
                 <option value={category._id}>{category.name}</option>
               ))}
           </select>
-          <button className="rounded-lg bg-green-400 text-white p-2">
+        </div>
+        <div className="mb-2">
+          <label className="NotInputLabel block">Properties</label>
+          <button
+            type="button"
+            onClick={addProperty}
+            className="bg-blue-600 rounded-lg p-1 text-sm text-white"
+          >
+            Add new property
+          </button>
+          {!!category?.properties?.length &&
+            category?.properties?.map((property, index) => {
+              return (
+                <div className="flex gap-2 m-2">
+                  <input
+                    type="text"
+                    value={property?.name}
+                    name="name"
+                    onChange={(ev) => handlePropertyChange(property, index, ev)}
+                    placeholder="Property Name"
+                    className="mb-0 "
+                  />
+                  <input
+                    type="text"
+                    value={property?.values}
+                    name="values"
+                    onChange={(ev) => handlePropertyChange(property, index, ev)}
+                    placeholder="Property values"
+                    className="mb-0 "
+                  />
+                  <button
+                    type="button"
+                    className="bg-red-600 rounded-lg p-1 text-white"
+                    onClick={() => deleteProperty(index)}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-6 h-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              );
+            })}
+        </div>
+        <div className="flex gap-2 w-full justify-center">
+          {editedCategory && (
+            <button
+              type="button"
+              onClick={() => cancelEdit()}
+              className="rounded-lg bg-gray-400 text-white p-2 w-2/12"
+            >
+              Cancel
+            </button>
+          )}
+          <button className="rounded-lg bg-green-400 text-white p-2 w-2/12">
             Save
           </button>
         </div>
       </form>
-
-      <div className="container-categories flex items-center justify-center mt-4">
-        {!isUploading.general ? (
-          <table className="table-fixed">
-            <thead>
-              <th>Name</th>
-              <th>Parent Category</th>
-              <th></th>
-            </thead>
-            <tbody>
-              {!!categories?.length &&
-                categories.map((category) => (
-                  <tr>
-                    <td>{category?.name}</td>
-                    <td>{category?.parent?.name}</td>
-                    <td>
-                      {/*<ButtonEdit
+      <div className="container-categories flex items-center justify-center mt-4 ">
+        {isUploading.general ? (
+          <Spinner />
+        ) : !categories.length ? (
+          <span>No categories</span>
+        ) : (
+          !editedCategory && (
+            <table className="table-fixed">
+              <thead>
+                <th>Name</th>
+                <th>Parent Category</th>
+                <th></th>
+              </thead>
+              <tbody>
+                {!!categories?.length &&
+                  categories.map((category) => (
+                    <tr>
+                      <td>{category?.name}</td>
+                      <td>{category?.parent?.name}</td>
+                      <td>
+                        {/*<ButtonEdit
                         id={category._id}
                         href={"/categories/edit/"}
                       />
@@ -157,26 +273,25 @@ export default function Categories() {
                         id={category._id}
                         deleteFunction={deleteCategory}
                       />*/}
-                      <button
-                        onClick={() => editFunction(category)}
-                        className="bg-blue-600 rounded-lg p-1 text-white"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteCategory(category?._id)}
-                        className="bg-red-600 rounded-lg p-1 text-white "
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              {isUploading.item && <Spinner />}
-            </tbody>
-          </table>
-        ) : (
-          <Spinner />
+                        <button
+                          onClick={() => editFunction(category)}
+                          className="bg-blue-600 rounded-lg p-1 text-white"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteCategory(category?._id)}
+                          className="bg-red-600 rounded-lg p-1 text-white "
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                {isUploading.item && <Spinner />}
+              </tbody>
+            </table>
+          )
         )}
       </div>
     </Layout>

@@ -1,7 +1,7 @@
 import axios from "axios";
 import Input from "./Input";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Spinner from "./Spinner";
 import { ReactSortable } from "react-sortablejs";
 
@@ -12,6 +12,10 @@ export default function ProductForm({
   children,
 }) {
   const [isUploading, setUploading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    axios.get("/api/categories").then((r) => setCategories([...r.data]));
+  }, []);
   const handleChange = async (ev: any) => {
     if (ev.target.name === "images") {
       const files = ev.target.files;
@@ -32,7 +36,7 @@ export default function ProductForm({
     } else {
       setProduct({
         ...product,
-        [ev.target.name]: ev.target.value,
+        [ev.target.name]: ev.target.value !== "null" ? ev.target.value : null,
       });
     }
   };
@@ -43,7 +47,21 @@ export default function ProductForm({
       ["images"]: [...images],
     });
   };
-  console.log(product, "images");
+  const propertiesForProduct = [];
+  if (categories?.length && product?.category) {
+    console.log(categories, product.category);
+    let catInfo = categories.find(({ _id }) => _id === product.category);
+    console.log(catInfo);
+    propertiesForProduct.push(...catInfo?.properties);
+    while (catInfo?.parent?._id) {
+      const parentCat = categories.find(
+        ({ _id }) => _id === catInfo?.parent?._id
+      );
+      propertiesForProduct.push(...parentCat.properties);
+      catInfo = parentCat;
+    }
+  }
+  console.log(product, propertiesForProduct);
   return (
     <form onSubmit={(ev) => onSubmit(ev, product)} className="w-full">
       <h2>{children}</h2>
@@ -57,7 +75,40 @@ export default function ProductForm({
       >
         Product Name
       </Input>
-
+      <div className="flex flex-col gap-2">
+        <label className="NotInputLabel">Categories</label>
+        <select
+          name="category"
+          value={product.category}
+          onChange={(e) => handleChange(e)}
+          className="mb-4"
+        >
+          <option value="null">Uncategorized</option>
+          {!!categories.length &&
+            categories.map((categorie) => {
+              return (
+                <option id={categorie._id} value={categorie._id}>
+                  {categorie.name}
+                </option>
+              );
+            })}
+        </select>
+        {!!propertiesForProduct?.length &&
+          propertiesForProduct?.map((propertie) => {
+            return (
+              <div className="flex gap-2 justify-between">
+                <label className="NotInputLabel">{propertie.name}</label>
+                <select>
+                  <option value="null">None</option>
+                  {!!propertie?.values.length &&
+                    propertie?.values?.map((value) => (
+                      <option value={value}>{value}</option>
+                    ))}
+                </select>
+              </div>
+            );
+          })}
+      </div>
       <div className="mb-5">
         <label className="relative"> Photos </label>
 
